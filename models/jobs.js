@@ -16,27 +16,27 @@ class Job {
    * Throws BadRequestError if company already in database.
    * */
 
-  static async create({ handle, title, salary, equity }) {
+  static async create({ company_handle, title, salary, equity }) {
     const duplicateCheck = await db.query(
-      `SELECT handle
+      `SELECT title
            FROM jobs
-           WHERE id = $1`,
-      [handle]
+           WHERE title = $1`,
+      [title]
     );
 
     if (duplicateCheck.rows[0])
-      throw new BadRequestError(`Duplicate company: ${handle}`);
+      throw new BadRequestError(`Duplicate job: ${title}`);
 
     const result = await db.query(
-      `INSERT INTO companies
-           (handle, title, salary, equity)
+      `INSERT INTO jobs
+           (company_handle, title, salary, equity)
            VALUES ($1, $2, $3, $4)
-           RETURNING handle, title, salary, equity`,
-      [handle, title, salary,equity]
+           RETURNING company_handle, title, salary, equity`,
+      [company_handle, title, salary,equity]
     );
-    const company = result.rows[0];
+    const job = result.rows[0];
 
-    return company;
+    return job;
   }
 
   /** Find all jobs.
@@ -105,28 +105,26 @@ class Job {
    * Throws NotFoundError if not found.
    */
 
-//   static async update(handle, data) {
-//     const { setCols, values } = sqlForPartialUpdate(data, {
-//       numEmployees: "num_employees",
-//       logoUrl: "logo_url",
-//     });
-//     const handleVarIdx = "$" + (values.length + 1);
+  static async update(id, data) {
+    const { setCols, values } = sqlForPartialUpdate(data, {
+      title: "title",
+      salary: "salary",
+      equity: "equity"
+    });
+    const handleVarIdx = "$" + (values.length + 1);
 
-//     const querySql = `UPDATE companies 
-//                       SET ${setCols} 
-//                       WHERE handle = ${handleVarIdx} 
-//                       RETURNING handle, 
-//                                 name, 
-//                                 description, 
-//                                 num_employees AS "numEmployees", 
-//                                 logo_url AS "logoUrl"`;
-//     const result = await db.query(querySql, [...values, handle]);
-//     const company = result.rows[0];
+    const querySql = `UPDATE jobs 
+                      SET ${setCols} 
+                      WHERE id = ${handleVarIdx} 
+                      RETURNING title, salary, equity`;
 
-//     if (!company) throw new NotFoundError(`No company: ${handle}`);
+    const result = await db.query(querySql, [...values, id]);
+    const job = result.rows[0];
 
-//     return company;
-//   }
+    if (!job) throw new NotFoundError(`No company: ${id}`);
+
+    return job;
+  }
 
   /** Delete given company from database; returns undefined.
    *
