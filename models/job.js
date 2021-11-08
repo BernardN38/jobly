@@ -24,15 +24,14 @@ class Job {
       [title]
     );
 
-    if (duplicateCheck.rows[0])
-      throw new BadRequestError(`Duplicate job: ${title}`);
+    if (duplicateCheck.rows[0]) throw new BadRequestError(`Duplicate job: ${title}`);
 
     const result = await db.query(
       `INSERT INTO jobs
            (company_handle, title, salary, equity)
            VALUES ($1, $2, $3, $4)
            RETURNING company_handle, title, salary, equity`,
-      [company_handle, title, salary,equity]
+      [company_handle, title, salary, equity]
     );
     const job = result.rows[0];
 
@@ -45,7 +44,7 @@ class Job {
    * Can be filtered by company name including a keyword, minimum salary or having equity
    * */
 
-  static async findAll({title, minSalary, hasEquity}) {
+  static async findAll({ title, minSalary, hasEquity } = {}) {
     const jobsRes = await db.query(
       `SELECT title, salary, equity, company_handle
            FROM jobs`
@@ -62,7 +61,7 @@ class Job {
         if (job.salary > minSalary) return job;
       });
     }
-    if (hasEquity=='true') {
+    if (hasEquity == 'true') {
       jobs = jobs.filter((job) => {
         if (job.equity > 0) return job;
       });
@@ -88,7 +87,7 @@ class Job {
 
     const job = jobsRes.rows[0];
 
-    // if (!job) throw new NotFoundError(`No company: ${handle}`);
+    if (!job) throw new NotFoundError(`No company: ${handle}`);
 
     return job || [];
   }
@@ -131,17 +130,17 @@ class Job {
    * Throws NotFoundError if company not found.
    **/
 
-  static async remove(handle) {
+  static async remove(id) {
     const result = await db.query(
       `DELETE
            FROM jobs
-           WHERE company_handle = $1
-           RETURNING handle`,
-      [handle]
+           WHERE id= $1
+           RETURNING *`,
+      [id]
     );
     const job = result.rows[0];
 
-    if (!job) throw new NotFoundError(`No company: ${handle}`);
+    if (!job) throw new NotFoundError(`No company: ${id}`);
   }
 }
 
