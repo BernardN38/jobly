@@ -45,7 +45,7 @@ class Company {
    * Can be filtered by company name including a keyword, minimum amout of employees or maximum amount of employees
    * */
 
-  static async findAll({name, minEmployees, maxEmployees}) {
+  static async findAll({name, minEmployees, maxEmployees}={}) {
     const companiesRes = await db.query(
       `SELECT handle,
                   name,
