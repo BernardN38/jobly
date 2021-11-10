@@ -87,7 +87,7 @@ class Job {
 
     const job = jobsRes.rows[0];
 
-    if (!job) throw new NotFoundError(`No company: ${handle}`);
+    if (!job) throw new NotFoundError(`No jobs for company: ${handle}`);
 
     return job || [];
   }
