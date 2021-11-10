@@ -30,7 +30,7 @@ class Job {
       `INSERT INTO jobs
            (company_handle, title, salary, equity)
            VALUES ($1, $2, $3, $4)
-           RETURNING company_handle, title, salary, equity`,
+           RETURNING *`,
       [company_handle, title, salary, equity]
     );
     const job = result.rows[0];
@@ -69,7 +69,7 @@ class Job {
     return jobs;
   }
 
-  /** Given a company handle, return data about company.
+  /** Given a job id, return data about job.
    *
    * Returns { handle, name, description, numEmployees, logoUrl, jobs }
    *   where jobs is [{ id, title, salary, equity, companyHandle }, ...]
@@ -92,14 +92,14 @@ class Job {
     return job || [];
   }
 
-  /** Update company data with `data`.
+  /** Update job data with `data`.
    *
    * This is a "partial update" --- it's fine if data doesn't contain all the
    * fields; this only changes provided ones.
    *
-   * Data can include: {name, description, numEmployees, logoUrl}
+   * Data can include: {'title', 'equity', 'salary'}
    *
-   * Returns {handle, name, description, numEmployees, logoUrl}
+   * Returns {'title', 'equity', 'salary'}
    *
    * Throws NotFoundError if not found.
    */
@@ -108,7 +108,8 @@ class Job {
     const { setCols, values } = sqlForPartialUpdate(data, {
       title: "title",
       salary: "salary",
-      equity: "equity"
+      equity: "equity",
+      // company_handle: "company_handle"
     });
     const handleVarIdx = "$" + (values.length + 1);
 
@@ -125,9 +126,9 @@ class Job {
     return job;
   }
 
-  /** Delete given company from database; returns undefined.
+  /** Delete given job from database; returns undefined.
    *
-   * Throws NotFoundError if company not found.
+   * Throws NotFoundError if job not found.
    **/
 
   static async remove(id) {
